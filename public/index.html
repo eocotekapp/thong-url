@@ -133,75 +133,119 @@
     </div>
   </div>
 
-  <script>
-    const form = document.getElementById("uploadForm");
-    const result = document.getElementById("result");
+ <script>
+  const form = document.getElementById("uploadForm");
+  const result = document.getElementById("result");
 
-    function escapeHtml(text) {
-      return String(text || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+  function escapeHtml(text) {
+    return String(text || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      result.innerHTML = `
-        <div class="result">
-          Đang upload...
+    const formData = new FormData(form);
+
+    result.innerHTML = `
+      <div class="result">
+        <div style="margin-bottom:12px;font-weight:700;">
+          Đang upload video...
         </div>
-      `;
 
-      const formData = new FormData(form);
+        <div style="width:100%;height:18px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
+          <div id="progressBar" style="width:0%;height:100%;background:#6fffb0;transition:width 0.2s;"></div>
+        </div>
 
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData
-        });
+        <div id="progressText" style="margin-top:10px;color:#b8c7e0;">
+          0%
+        </div>
+      </div>
+    `;
 
-        const data = await response.json();
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
 
-        if (!data.success) {
+    try {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("POST", "/api/upload", true);
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+
+          progressBar.style.width = percent + "%";
+          progressText.innerHTML = `
+            ${percent}%<br>
+            ${(event.loaded / 1024 / 1024).toFixed(2)} MB / ${(event.total / 1024 / 1024).toFixed(2)} MB
+          `;
+        }
+      });
+
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+
+          if (!data.success) {
+            result.innerHTML = `
+              <div class="result error">
+                Upload thất bại<br><br>
+                ${escapeHtml(data.message || "Lỗi không xác định")}
+              </div>
+            `;
+            return;
+          }
+
           result.innerHTML = `
-            <div class="result error">
-              Upload thất bại<br><br>
-              ${escapeHtml(data.message || "Lỗi không xác định")}
+            <div class="result">
+              <div class="line"><b>Tên file:</b> ${escapeHtml(data.fileName)}</div>
+              <div class="line"><b>Public ID:</b> ${escapeHtml(data.publicId)}</div>
+              <div class="line"><b>Định dạng:</b> ${escapeHtml(data.format)}</div>
+              <div class="line"><b>Kích thước:</b> ${(data.bytes / 1024 / 1024).toFixed(2)} MB</div>
+              <div class="line"><b>Hết hạn sau:</b> ${escapeHtml(data.expiresInMinutes)} phút</div>
+              <div class="line">
+                <b>Direct URL:</b><br>
+                <a href="${escapeHtml(data.directUrl)}" target="_blank">${escapeHtml(data.directUrl)}</a>
+              </div>
+              <div class="line">
+                <b>Preview URL:</b><br>
+                <a href="${escapeHtml(data.previewUrl)}" target="_blank">${escapeHtml(data.previewUrl)}</a>
+              </div>
+              <video controls src="${escapeHtml(data.previewUrl)}"></video>
             </div>
           `;
-          return;
+        } catch (err) {
+          result.innerHTML = `
+            <div class="result error">
+              Không đọc được phản hồi từ server
+            </div>
+          `;
         }
+      };
 
-        result.innerHTML = `
-          <div class="result">
-            <div class="line"><b>Tên file:</b> ${escapeHtml(data.fileName)}</div>
-            <div class="line"><b>Public ID:</b> ${escapeHtml(data.publicId)}</div>
-            <div class="line"><b>Định dạng:</b> ${escapeHtml(data.format)}</div>
-            <div class="line"><b>Kích thước:</b> ${escapeHtml(data.bytes)} bytes</div>
-            <div class="line"><b>Hết hạn sau:</b> ${escapeHtml(data.expiresInMinutes)} phút</div>
-            <div class="line">
-              <b>Direct URL:</b><br>
-              <a href="${escapeHtml(data.directUrl)}" target="_blank">${escapeHtml(data.directUrl)}</a>
-            </div>
-            <div class="line">
-              <b>Preview URL:</b><br>
-              <a href="${escapeHtml(data.previewUrl)}" target="_blank">${escapeHtml(data.previewUrl)}</a>
-            </div>
-            <video controls src="${escapeHtml(data.previewUrl)}"></video>
-          </div>
-        `;
-      } catch (error) {
+      xhr.onerror = () => {
         result.innerHTML = `
           <div class="result error">
-            Upload thất bại<br><br>
-            ${escapeHtml(error.message)}
+            Upload thất bại do lỗi mạng hoặc server
           </div>
         `;
-      }
-    });
-  </script>
+      };
+
+      xhr.send(formData);
+    } catch (error) {
+      result.innerHTML = `
+        <div class="result error">
+          Upload thất bại<br><br>
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+    }
+  });
+</script>
 </body>
 </html>
