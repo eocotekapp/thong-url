@@ -1,212 +1,366 @@
-<script>
-  const form = document.getElementById("uploadForm");
-  const result = document.getElementById("result");
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload video lấy direct URL</title>
 
-  function escapeHtml(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    body {
+      background: radial-gradient(circle at top, #10224a 0%, #07111f 60%, #020814 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 24px;
+    }
 
-    const formData = new FormData(form);
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
 
-    result.innerHTML = `
-      <div class="result">
-        <div style="margin-bottom:12px;font-weight:700;">
-          Đang upload video...
-        </div>
+    .card {
+      background: rgba(14, 24, 44, 0.9);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      backdrop-filter: blur(20px);
+    }
 
-        <div style="
-          width:100%;
-          height:20px;
-          background:rgba(255,255,255,0.08);
-          border-radius:999px;
-          overflow:hidden;
-        ">
-          <div id="progressBar" style="
-            width:0%;
-            height:100%;
-            background:linear-gradient(90deg,#6fffb0,#32d8ff);
-            border-radius:999px;
-            transition:width 0.2s ease;
-          "></div>
-        </div>
+    h1 {
+      font-size: 42px;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
 
-        <div id="progressText" style="
-          margin-top:12px;
-          color:#d5e3ff;
-          font-size:15px;
-          font-weight:600;
-        ">
-          0%
-        </div>
+    .sub {
+      color: #b7c7e4;
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #dce7ff;
+      font-weight: 600;
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 24px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .upload-btn {
+      background: linear-gradient(90deg, #67ff9a, #3be7ff);
+      color: #04111f;
+      margin-bottom: 24px;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.95;
+    }
+
+    .result {
+      margin-top: 24px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .line {
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      word-break: break-word;
+    }
+
+    .line a {
+      color: #6fc8ff;
+      text-decoration: none;
+    }
+
+    .line a:hover {
+      text-decoration: underline;
+    }
+
+    .copy-btn {
+      margin-top: 12px;
+      width: 100%;
+      background: #2f7df6;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .copy-btn:hover {
+      opacity: 0.9;
+    }
+
+    .error {
+      border: 1px solid rgba(255,80,80,0.4);
+      color: #ffb4b4;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 18px;
+      margin-top: 12px;
+      background: #000;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .sub {
+        font-size: 16px;
+      }
+
+      button {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Upload video lấy direct URL</h1>
+
+      <div class="sub">
+        Upload video lên Cloudinary và lấy link direct có giới hạn thời gian 15 phút hoặc 30 phút.
       </div>
-    `;
 
-    const progressBar = document.getElementById("progressBar");
-    const progressText = document.getElementById("progressText");
+      <form id="uploadForm">
+        <label>Chọn video</label>
+        <input type="file" name="video" accept="video/*" required />
 
-    try {
-      const xhr = new XMLHttpRequest();
+        <label>Thời hạn link</label>
+        <select name="expiresIn">
+          <option value="15">15 phút</option>
+          <option value="30" selected>30 phút</option>
+        </select>
 
-      xhr.open("POST", "/api/upload", true);
+        <button type="submit" class="upload-btn">
+          Upload video
+        </button>
+      </form>
 
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
+      <div id="result"></div>
+    </div>
+  </div>
 
-          progressBar.style.width = percent + "%";
+  <script>
+    const form = document.getElementById("uploadForm");
+    const result = document.getElementById("result");
 
-          progressText.innerHTML = `
-            ${percent}%<br>
-            <span style="
-              font-size:13px;
-              color:#9db3d1;
-              font-weight:400;
-            ">
-              ${(event.loaded / 1024 / 1024).toFixed(2)} MB / ${(event.total / 1024 / 1024).toFixed(2)} MB
-            </span>
-          `;
-        }
-      });
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-      xhr.onload = () => {
-        try {
-          const data = JSON.parse(xhr.responseText);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-          if (!data.success) {
-            result.innerHTML = `
-              <div class="result error">
-                Upload thất bại<br><br>
-                ${escapeHtml(data.message || "Lỗi không xác định")}
-              </div>
-            `;
-            return;
-          }
+      const formData = new FormData(form);
 
-          result.innerHTML = `
-            <div class="result">
-              <div class="line">
-                <b>Tên file:</b><br>
-                ${escapeHtml(data.fileName)}
-              </div>
-
-              <div class="line">
-                <b>Public ID:</b><br>
-                ${escapeHtml(data.publicId)}
-              </div>
-
-              <div class="line">
-                <b>Định dạng:</b>
-                ${escapeHtml(data.format)}
-              </div>
-
-              <div class="line">
-                <b>Kích thước:</b>
-                ${(data.bytes / 1024 / 1024).toFixed(2)} MB
-              </div>
-
-              <div class="line">
-                <b>Hết hạn sau:</b>
-                ${escapeHtml(data.expiresInMinutes)} phút
-              </div>
-
-              <div class="line">
-                <b>Direct URL:</b><br><br>
-
-                <a href="${escapeHtml(data.directUrl)}" target="_blank">
-                  ${escapeHtml(data.directUrl)}
-                </a>
-
-                <button
-                  type="button"
-                  onclick="navigator.clipboard.writeText('${escapeHtml(data.directUrl)}'); this.innerText='Đã copy';"
-                  style="
-                    margin-top:12px;
-                    width:100%;
-                    background:#2f7df6;
-                    color:#fff;
-                    border:none;
-                    border-radius:12px;
-                    padding:12px;
-                    font-weight:700;
-                    cursor:pointer;
-                  "
-                >
-                  Copy Direct URL
-                </button>
-              </div>
-
-              <div class="line">
-                <b>Preview URL:</b><br><br>
-
-                <a href="${escapeHtml(data.previewUrl)}" target="_blank">
-                  ${escapeHtml(data.previewUrl)}
-                </a>
-
-                <button
-                  type="button"
-                  onclick="navigator.clipboard.writeText('${escapeHtml(data.previewUrl)}'); this.innerText='Đã copy';"
-                  style="
-                    margin-top:12px;
-                    width:100%;
-                    background:#1d9b5f;
-                    color:#fff;
-                    border:none;
-                    border-radius:12px;
-                    padding:12px;
-                    font-weight:700;
-                    cursor:pointer;
-                  "
-                >
-                  Copy Preview URL
-                </button>
-              </div>
-
-              <video
-                controls
-                playsinline
-                style="
-                  width:100%;
-                  border-radius:16px;
-                  margin-top:20px;
-                  background:#000;
-                "
-                src="${escapeHtml(data.previewUrl)}"
-              ></video>
-            </div>
-          `;
-        } catch (err) {
-          result.innerHTML = `
-            <div class="result error">
-              Không đọc được phản hồi từ server
-            </div>
-          `;
-        }
-      };
-
-      xhr.onerror = () => {
-        result.innerHTML = `
-          <div class="result error">
-            Upload thất bại do lỗi mạng hoặc server
-          </div>
-        `;
-      };
-
-      xhr.send(formData);
-    } catch (error) {
       result.innerHTML = `
-        <div class="result error">
-          Upload thất bại<br><br>
-          ${escapeHtml(error.message)}
+        <div class="result">
+          <div style="margin-bottom:12px;font-weight:700;">
+            Đang upload video...
+          </div>
+
+          <div style="
+            width:100%;
+            height:22px;
+            background:rgba(255,255,255,0.08);
+            border-radius:999px;
+            overflow:hidden;
+          ">
+            <div id="progressBar" style="
+              width:0%;
+              height:100%;
+              background:linear-gradient(90deg,#67ff9a,#3be7ff);
+              border-radius:999px;
+              transition:width 0.2s ease;
+            "></div>
+          </div>
+
+          <div id="progressText" style="
+            margin-top:12px;
+            color:#d5e3ff;
+            font-size:16px;
+            font-weight:600;
+          ">
+            0%
+          </div>
         </div>
       `;
-    }
-  });
-</script>
+
+      const progressBar = document.getElementById("progressBar");
+      const progressText = document.getElementById("progressText");
+
+      try {
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("POST", "/api/upload", true);
+
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+
+            progressBar.style.width = percent + "%";
+
+            progressText.innerHTML = `
+              ${percent}%<br>
+              <span style="font-size:13px;color:#9db3d1;font-weight:400;">
+                ${(event.loaded / 1024 / 1024).toFixed(2)} MB / ${(event.total / 1024 / 1024).toFixed(2)} MB
+              </span>
+            `;
+          }
+        });
+
+        xhr.onload = () => {
+          try {
+            const data = JSON.parse(xhr.responseText);
+
+            if (!data.success) {
+              result.innerHTML = `
+                <div class="result error">
+                  Upload thất bại<br><br>
+                  ${escapeHtml(data.message || "Lỗi không xác định")}
+                </div>
+              `;
+              return;
+            }
+
+            result.innerHTML = `
+              <div class="result">
+                <div class="line">
+                  <b>Tên file:</b><br>
+                  ${escapeHtml(data.fileName)}
+                </div>
+
+                <div class="line">
+                  <b>Direct URL:</b><br><br>
+                  <a href="${data.directUrl}" target="_blank">
+                    ${escapeHtml(data.directUrl)}
+                  </a>
+
+                  <button
+                    type="button"
+                    class="copy-btn"
+                    data-copy="${data.directUrl}"
+                  >
+                    Copy Direct URL
+                  </button>
+                </div>
+
+                <div class="line">
+                  <b>Preview URL:</b><br><br>
+                  <a href="${data.previewUrl}" target="_blank">
+                    ${escapeHtml(data.previewUrl)}
+                  </a>
+
+                  <button
+                    type="button"
+                    class="copy-btn"
+                    data-copy="${data.previewUrl}"
+                  >
+                    Copy Preview URL
+                  </button>
+                </div>
+
+                <video
+                  controls
+                  playsinline
+                  src="${data.previewUrl}"
+                ></video>
+              </div>
+            `;
+
+            document.querySelectorAll(".copy-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                navigator.clipboard.writeText(btn.dataset.copy);
+                btn.innerText = "Đã copy";
+              });
+            });
+          } catch (err) {
+            result.innerHTML = `
+              <div class="result error">
+                Không đọc được phản hồi từ server
+              </div>
+            `;
+          }
+        };
+
+        xhr.onerror = () => {
+          result.innerHTML = `
+            <div class="result error">
+              Upload thất bại do lỗi mạng hoặc server
+            </div>
+          `;
+        };
+
+        xhr.send(formData);
+      } catch (error) {
+        result.innerHTML = `
+          <div class="result error">
+            Upload thất bại<br><br>
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
