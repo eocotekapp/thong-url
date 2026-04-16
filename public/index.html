@@ -1,139 +1,4 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cloudinary Video Upload</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(180deg, #071425 0%, #0d1d35 100%);
-      color: #ffffff;
-      padding: 24px;
-    }
-
-    .wrap {
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 24px;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-    }
-
-    h1 {
-      margin-top: 0;
-      font-size: 30px;
-    }
-
-    p {
-      color: #b8c7e0;
-      line-height: 1.6;
-    }
-
-    label {
-      display: block;
-      margin-top: 18px;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #d5e3ff;
-    }
-
-    input[type="file"],
-    select {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      color: #fff;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 15px;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 20px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      color: #041018;
-      background: #6fffb0;
-    }
-
-    .result {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      word-break: break-word;
-    }
-
-    .line {
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-    }
-
-    a {
-      color: #7ec8ff;
-      text-decoration: none;
-      word-break: break-all;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 16px;
-      margin-top: 16px;
-      background: #000;
-    }
-
-    .error {
-      color: #ffb5b5;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Upload video lấy direct URL</h1>
-      <p>
-        Upload video lên Cloudinary và lấy link direct có giới hạn thời gian 15 phút hoặc 30 phút.
-      </p>
-
-      <form id="uploadForm">
-        <label>Chọn video</label>
-        <input type="file" name="video" accept="video/*" required>
-
-        <label>Thời hạn link</label>
-        <select name="expireMinutes">
-          <option value="15">15 phút</option>
-          <option value="30" selected>30 phút</option>
-        </select>
-
-        <button type="submit">Upload video</button>
-      </form>
-
-      <div id="result"></div>
-    </div>
-  </div>
-
- <script>
+<script>
   const form = document.getElementById("uploadForm");
   const result = document.getElementById("result");
 
@@ -157,11 +22,28 @@
           Đang upload video...
         </div>
 
-        <div style="width:100%;height:18px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
-          <div id="progressBar" style="width:0%;height:100%;background:#6fffb0;transition:width 0.2s;"></div>
+        <div style="
+          width:100%;
+          height:20px;
+          background:rgba(255,255,255,0.08);
+          border-radius:999px;
+          overflow:hidden;
+        ">
+          <div id="progressBar" style="
+            width:0%;
+            height:100%;
+            background:linear-gradient(90deg,#6fffb0,#32d8ff);
+            border-radius:999px;
+            transition:width 0.2s ease;
+          "></div>
         </div>
 
-        <div id="progressText" style="margin-top:10px;color:#b8c7e0;">
+        <div id="progressText" style="
+          margin-top:12px;
+          color:#d5e3ff;
+          font-size:15px;
+          font-weight:600;
+        ">
           0%
         </div>
       </div>
@@ -180,9 +62,16 @@
           const percent = Math.round((event.loaded / event.total) * 100);
 
           progressBar.style.width = percent + "%";
+
           progressText.innerHTML = `
             ${percent}%<br>
-            ${(event.loaded / 1024 / 1024).toFixed(2)} MB / ${(event.total / 1024 / 1024).toFixed(2)} MB
+            <span style="
+              font-size:13px;
+              color:#9db3d1;
+              font-weight:400;
+            ">
+              ${(event.loaded / 1024 / 1024).toFixed(2)} MB / ${(event.total / 1024 / 1024).toFixed(2)} MB
+            </span>
           `;
         }
       });
@@ -203,20 +92,94 @@
 
           result.innerHTML = `
             <div class="result">
-              <div class="line"><b>Tên file:</b> ${escapeHtml(data.fileName)}</div>
-              <div class="line"><b>Public ID:</b> ${escapeHtml(data.publicId)}</div>
-              <div class="line"><b>Định dạng:</b> ${escapeHtml(data.format)}</div>
-              <div class="line"><b>Kích thước:</b> ${(data.bytes / 1024 / 1024).toFixed(2)} MB</div>
-              <div class="line"><b>Hết hạn sau:</b> ${escapeHtml(data.expiresInMinutes)} phút</div>
               <div class="line">
-                <b>Direct URL:</b><br>
-                <a href="${escapeHtml(data.directUrl)}" target="_blank">${escapeHtml(data.directUrl)}</a>
+                <b>Tên file:</b><br>
+                ${escapeHtml(data.fileName)}
               </div>
+
               <div class="line">
-                <b>Preview URL:</b><br>
-                <a href="${escapeHtml(data.previewUrl)}" target="_blank">${escapeHtml(data.previewUrl)}</a>
+                <b>Public ID:</b><br>
+                ${escapeHtml(data.publicId)}
               </div>
-              <video controls src="${escapeHtml(data.previewUrl)}"></video>
+
+              <div class="line">
+                <b>Định dạng:</b>
+                ${escapeHtml(data.format)}
+              </div>
+
+              <div class="line">
+                <b>Kích thước:</b>
+                ${(data.bytes / 1024 / 1024).toFixed(2)} MB
+              </div>
+
+              <div class="line">
+                <b>Hết hạn sau:</b>
+                ${escapeHtml(data.expiresInMinutes)} phút
+              </div>
+
+              <div class="line">
+                <b>Direct URL:</b><br><br>
+
+                <a href="${escapeHtml(data.directUrl)}" target="_blank">
+                  ${escapeHtml(data.directUrl)}
+                </a>
+
+                <button
+                  type="button"
+                  onclick="navigator.clipboard.writeText('${escapeHtml(data.directUrl)}'); this.innerText='Đã copy';"
+                  style="
+                    margin-top:12px;
+                    width:100%;
+                    background:#2f7df6;
+                    color:#fff;
+                    border:none;
+                    border-radius:12px;
+                    padding:12px;
+                    font-weight:700;
+                    cursor:pointer;
+                  "
+                >
+                  Copy Direct URL
+                </button>
+              </div>
+
+              <div class="line">
+                <b>Preview URL:</b><br><br>
+
+                <a href="${escapeHtml(data.previewUrl)}" target="_blank">
+                  ${escapeHtml(data.previewUrl)}
+                </a>
+
+                <button
+                  type="button"
+                  onclick="navigator.clipboard.writeText('${escapeHtml(data.previewUrl)}'); this.innerText='Đã copy';"
+                  style="
+                    margin-top:12px;
+                    width:100%;
+                    background:#1d9b5f;
+                    color:#fff;
+                    border:none;
+                    border-radius:12px;
+                    padding:12px;
+                    font-weight:700;
+                    cursor:pointer;
+                  "
+                >
+                  Copy Preview URL
+                </button>
+              </div>
+
+              <video
+                controls
+                playsinline
+                style="
+                  width:100%;
+                  border-radius:16px;
+                  margin-top:20px;
+                  background:#000;
+                "
+                src="${escapeHtml(data.previewUrl)}"
+              ></video>
             </div>
           `;
         } catch (err) {
@@ -247,5 +210,3 @@
     }
   });
 </script>
-</body>
-</html>
