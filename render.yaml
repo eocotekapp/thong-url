@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: telebox-webapp
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: TELEBOX_TOKEN
+        sync: false
+      - key: PORT
+        value: 10000
