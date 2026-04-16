@@ -37,9 +37,7 @@ function extractUrls(text) {
     const matches = text.match(pattern);
     if (matches) {
       for (const match of matches) {
-        if (!found.includes(match)) {
-          found.push(match);
-        }
+        if (!found.includes(match)) found.push(match);
       }
     }
   }
@@ -69,9 +67,10 @@ app.post("/api/resolve", async (req, res) => {
       }
     });
 
-    const html = typeof response.data === "string"
-      ? response.data
-      : JSON.stringify(response.data);
+    const html =
+      typeof response.data === "string"
+        ? response.data
+        : JSON.stringify(response.data);
 
     const urls = extractUrls(html);
 
@@ -127,7 +126,6 @@ app.post("/api/upload", upload.single("video"), async (req, res) => {
 
     const result = uploadResponse.data || {};
     const rawText = JSON.stringify(result);
-
     const urls = extractUrls(rawText);
 
     fs.unlinkSync(filePath);
