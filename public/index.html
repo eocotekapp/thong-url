@@ -1,198 +1,144 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TeleBox URL Tool</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloudinary Video Upload</title>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #eaf2ff;
-      background:
-        radial-gradient(circle at top left, #0d234f 0%, #07152d 35%, #050d1d 100%);
       min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #071425 0%, #0d1d35 100%);
+      color: #ffffff;
+      padding: 24px;
     }
+
     .wrap {
-      width: min(920px, calc(100% - 28px));
-      margin: 28px auto;
+      max-width: 760px;
+      margin: 0 auto;
     }
+
     .card {
-      background: rgba(9, 19, 40, 0.88);
-      border: 1px solid rgba(114, 144, 214, 0.22);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px;
-      padding: 22px;
-      box-shadow: 0 16px 50px rgba(0,0,0,0.35);
-      margin-bottom: 20px;
-      backdrop-filter: blur(12px);
+      padding: 24px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     }
-    h1, h2, h3, p { margin-top: 0; }
-    .badge {
-      display: inline-block;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(54, 132, 255, 0.16);
-      color: #8ed0ff;
-      border: 1px solid rgba(96, 168, 255, 0.35);
-      font-size: 14px;
-      margin-bottom: 14px;
+
+    h1 {
+      margin-top: 0;
+      font-size: 30px;
     }
+
+    p {
+      color: #b8c7e0;
+      line-height: 1.6;
+    }
+
     label {
       display: block;
-      margin: 18px 0 10px;
-      color: #cddcff;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #d5e3ff;
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px;
       font-size: 15px;
     }
-    input[type="text"],
-    select,
-    textarea,
-    input[type="url"] {
-      width: 100%;
-      border: 1px solid rgba(122, 149, 205, 0.22);
-      background: #03102a;
-      color: #eff6ff;
-      border-radius: 18px;
-      padding: 16px 18px;
-      font-size: 16px;
-      outline: none;
-    }
-    input[type="file"] {
-      width: 100%;
-      border: 1px solid rgba(122, 149, 205, 0.22);
-      background: #03102a;
-      color: #eff6ff;
-      border-radius: 18px;
-      padding: 12px 14px;
-      font-size: 16px;
-    }
+
     button {
       width: 100%;
       border: 0;
-      border-radius: 18px;
-      padding: 18px 20px;
-      font-size: 18px;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 16px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 18px;
-      color: #05240f;
-      background: #28c85b;
+      color: #041018;
+      background: #6fffb0;
     }
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-    .muted {
-      color: #aebfdd;
-      line-height: 1.6;
-    }
+
     .result {
-      margin-top: 18px;
-      border-radius: 20px;
-      padding: 16px;
-      border: 1px solid rgba(118, 148, 217, 0.24);
-      background: rgba(3, 16, 42, 0.78);
-      white-space: pre-wrap;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
       word-break: break-word;
     }
-    .error {
-      border-color: rgba(255, 91, 121, 0.5);
-      color: #ffc7d0;
-    }
-    .success {
-      border-color: rgba(85, 212, 132, 0.45);
-      color: #dfffe9;
-    }
+
     .line {
-      margin: 10px 0;
-      padding: 12px 14px;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
       background: rgba(255,255,255,0.04);
-      border-radius: 14px;
     }
-    .url {
-      color: #8fd7ff;
+
+    a {
+      color: #7ec8ff;
       text-decoration: none;
       word-break: break-all;
     }
-    .small {
-      font-size: 13px;
-      color: #9fb3d8;
+
+    video {
+      width: 100%;
+      border-radius: 16px;
+      margin-top: 16px;
+      background: #000;
     }
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin: 0;
-      font-size: 13px;
-      color: #ffd6de;
+
+    .error {
+      color: #ffb5b5;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="badge">Upload TeleBox</div>
-      <h1>Upload video và lấy link</h1>
-      <p class="muted">
-        Bản này ưu tiên trả ra 2 loại link sau khi upload xong:
-        <b>view URL</b> và <b>download/direct URL</b>.
-        Nếu TeleBox trong response có sinh link có đuôi file thì app sẽ cố bóc ra tự động.
+      <h1>Upload video lấy direct URL</h1>
+      <p>
+        Upload video lên Cloudinary và lấy link direct có giới hạn thời gian 15 phút hoặc 30 phút.
       </p>
 
       <form id="uploadForm">
-        <label for="video">Chọn video</label>
-        <input id="video" name="video" type="file" accept="video/*" required />
+        <label>Chọn video</label>
+        <input type="file" name="video" accept="video/*" required>
 
-        <label for="folderName">Tên folder trên TeleBox</label>
-        <input id="folderName" name="folderName" type="text" value="Cloud Server" />
-
-        <label for="expire">Thời hạn link</label>
-        <select id="expire" name="expire">
-          <option value="30m">30 phút</option>
-          <option value="1h">1 giờ</option>
-          <option value="24h" selected>24 giờ</option>
-          <option value="7d">7 ngày</option>
+        <label>Thời hạn link</label>
+        <select name="expireMinutes">
+          <option value="15">15 phút</option>
+          <option value="30" selected>30 phút</option>
         </select>
 
-        <button id="uploadBtn" type="submit">Upload và lấy link</button>
+        <button type="submit">Upload video</button>
       </form>
 
-      <div id="uploadResult"></div>
-    </div>
-
-    <div class="card">
-      <div class="badge">Resolve link có sẵn</div>
-      <h2>Dán link TeleBox để bóc direct URL</h2>
-      <p class="muted">
-        Dùng khi bạn đã có link <b>/s/...</b> hoặc <b>/f-detail/...</b> và chỉ muốn lấy lại
-        link tải / link xem có đuôi file.
-      </p>
-
-      <form id="resolveForm">
-        <label for="resolveUrl">Link TeleBox</label>
-        <input
-          id="resolveUrl"
-          name="url"
-          type="url"
-          placeholder="Dán link TeleBox vào đây"
-          required
-        />
-        <button id="resolveBtn" type="submit">Resolve link</button>
-      </form>
-
-      <div id="resolveResult"></div>
+      <div id="result"></div>
     </div>
   </div>
 
   <script>
-    const uploadForm = document.getElementById("uploadForm");
-    const resolveForm = document.getElementById("resolveForm");
-    const uploadResult = document.getElementById("uploadResult");
-    const resolveResult = document.getElementById("resolveResult");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const resolveBtn = document.getElementById("resolveBtn");
+    const form = document.getElementById("uploadForm");
+    const result = document.getElementById("result");
 
-    function escapeHtml(value) {
-      return String(value || "")
+    function escapeHtml(text) {
+      return String(text || "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -200,36 +146,18 @@
         .replaceAll("'", "&#039;");
     }
 
-    function renderUrlBlock(title, url) {
-      if (!url) return "";
-      const safe = escapeHtml(url);
-      return `
-        <div class="line">
-          <div><b>${escapeHtml(title)}</b></div>
-          <div><a class="url" href="${safe}" target="_blank" rel="noreferrer">${safe}</a></div>
-        </div>
-      `;
-    }
-
-    function renderCandidates(urls) {
-      if (!urls || !urls.length) return "";
-      return `
-        <div class="line">
-          <div><b>Các URL ứng viên</b></div>
-          ${urls.map((u) => `<div style="margin-top:8px;"><a class="url" href="${escapeHtml(u)}" target="_blank" rel="noreferrer">${escapeHtml(u)}</a></div>`).join("")}
-        </div>
-      `;
-    }
-
-    uploadForm.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = "Đang upload...";
-      uploadResult.innerHTML = `<div class="result">Đang xử lý...</div>`;
+
+      result.innerHTML = `
+        <div class="result">
+          Đang upload...
+        </div>
+      `;
+
+      const formData = new FormData(form);
 
       try {
-        const formData = new FormData(uploadForm);
-
         const response = await fetch("/api/upload", {
           method: "POST",
           body: formData
@@ -237,107 +165,41 @@
 
         const data = await response.json();
 
-        if (!response.ok || !data.success) {
-          uploadResult.innerHTML = `
+        if (!data.success) {
+          result.innerHTML = `
             <div class="result error">
-              <div><b>Upload thất bại</b></div>
-              <div class="line">Message: ${escapeHtml(data.message || "")}</div>
-              <div class="line">Status: ${escapeHtml(data.status || "")}</div>
-              <div class="line">
-                <div><b>Response</b></div>
-                <pre>${escapeHtml(JSON.stringify(data.responseData || {}, null, 2))}</pre>
-              </div>
+              Upload thất bại<br><br>
+              ${escapeHtml(data.message || "Lỗi không xác định")}
             </div>
           `;
           return;
         }
 
-        uploadResult.innerHTML = `
-          <div class="result success">
-            <div><b>Upload thành công</b></div>
-            <div class="line">Tên file: ${escapeHtml(data.fileName || "")}</div>
-            <div class="line">Folder: ${escapeHtml(data.folderName || "")}</div>
-            <div class="line">Thời hạn: ${escapeHtml(data.expire || "")}</div>
-            ${renderUrlBlock("Share URL", data.shareUrl)}
-            ${renderUrlBlock("View URL", data.viewUrl)}
-            ${renderUrlBlock("Download URL", data.downloadUrl)}
-            ${renderUrlBlock("Direct URL", data.directUrl)}
-            ${renderCandidates(data.candidates)}
-            <div class="line small">
-              Nếu chưa có direct URL thì TeleBox có thể chưa trả ra link thật trong response.
-            </div>
-          </div>
-        `;
-      } catch (error) {
-        uploadResult.innerHTML = `
-          <div class="result error">
-            <div><b>Upload thất bại</b></div>
-            <div class="line">Lỗi trình duyệt: ${escapeHtml(error.message || "")}</div>
-          </div>
-        `;
-      } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = "Upload và lấy link";
-      }
-    });
-
-    resolveForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      resolveBtn.disabled = true;
-      resolveBtn.textContent = "Đang resolve...";
-      resolveResult.innerHTML = `<div class="result">Đang xử lý...</div>`;
-
-      try {
-        const body = {
-          url: document.getElementById("resolveUrl").value.trim()
-        };
-
-        const response = await fetch("/api/resolve", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(body)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-          resolveResult.innerHTML = `
-            <div class="result error">
-              <div><b>Resolve thất bại</b></div>
-              <div class="line">Message: ${escapeHtml(data.message || "")}</div>
-              <div class="line">Status: ${escapeHtml(data.status || "")}</div>
-              <div class="line">
-                <div><b>Response</b></div>
-                <pre>${escapeHtml(JSON.stringify(data.responseData || {}, null, 2))}</pre>
-              </div>
-            </div>
-          `;
-          return;
-        }
-
-        resolveResult.innerHTML = `
-          <div class="result success">
-            <div><b>Resolve thành công</b></div>
-            ${renderUrlBlock("Final URL", data.finalUrl)}
-            ${renderCandidates(data.candidates)}
+        result.innerHTML = `
+          <div class="result">
+            <div class="line"><b>Tên file:</b> ${escapeHtml(data.fileName)}</div>
+            <div class="line"><b>Public ID:</b> ${escapeHtml(data.publicId)}</div>
+            <div class="line"><b>Định dạng:</b> ${escapeHtml(data.format)}</div>
+            <div class="line"><b>Kích thước:</b> ${escapeHtml(data.bytes)} bytes</div>
+            <div class="line"><b>Hết hạn sau:</b> ${escapeHtml(data.expiresInMinutes)} phút</div>
             <div class="line">
-              <div><b>HTML preview</b></div>
-              <pre>${escapeHtml(data.htmlPreview || "")}</pre>
+              <b>Direct URL:</b><br>
+              <a href="${escapeHtml(data.directUrl)}" target="_blank">${escapeHtml(data.directUrl)}</a>
             </div>
+            <div class="line">
+              <b>Preview URL:</b><br>
+              <a href="${escapeHtml(data.previewUrl)}" target="_blank">${escapeHtml(data.previewUrl)}</a>
+            </div>
+            <video controls src="${escapeHtml(data.previewUrl)}"></video>
           </div>
         `;
       } catch (error) {
-        resolveResult.innerHTML = `
+        result.innerHTML = `
           <div class="result error">
-            <div><b>Resolve thất bại</b></div>
-            <div class="line">Lỗi trình duyệt: ${escapeHtml(error.message || "")}</div>
+            Upload thất bại<br><br>
+            ${escapeHtml(error.message)}
           </div>
         `;
-      } finally {
-        resolveBtn.disabled = false;
-        resolveBtn.textContent = "Resolve link";
       }
     });
   </script>
