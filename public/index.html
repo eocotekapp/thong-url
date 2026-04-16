@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeleBox Video Uploader</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --line: #243043;
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #0b1220, #0f172a);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    .card {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.28);
+      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+    h1, h2 { margin: 0 0 8px; }
+    p { color: var(--muted); line-height: 1.55; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    label { display: block; font-size: 14px; margin-bottom: 8px; color: #cbd5e1; }
+    input, select, button, textarea {
+      width: 100%; border-radius: 14px; border: 1px solid var(--line);
+      background: #0b1220; color: var(--text); padding: 14px 16px; font-size: 15px;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    input[type=file] { padding: 10px; }
+    button {
+      background: var(--accent); color: #052e16; font-weight: 700; cursor: pointer;
+      border: none; margin-top: 10px;
+    }
+    .secondary { background: var(--accent2); color: #082f49; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .row { margin-top: 16px; }
+    .status, .result {
+      margin-top: 18px; padding: 16px; border-radius: 14px; border: 1px solid var(--line);
+      background: #0b1220; white-space: pre-wrap; word-break: break-word;
+    }
+    .error { border-color: rgba(239,68,68,.45); color: #fecaca; }
+    .ok { border-color: rgba(34,197,94,.45); }
+    .pill {
+      display: inline-block; background: rgba(34,197,94,.12); color: #86efac;
+      padding: 6px 10px; border-radius: 999px; font-size: 12px; margin-bottom: 12px;
+      border: 1px solid rgba(34,197,94,.2);
+    }
+    .pill.blue {
+      background: rgba(56,189,248,.12); color: #7dd3fc; border-color: rgba(56,189,248,.2);
+    }
+    a { color: #93c5fd; }
+    code { color: #fca5a5; }
+    .linkbox {
+      background: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; margin-top: 10px;
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .actions button { width: auto; margin-top: 0; padding: 10px 14px; }
+    .muted { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="pill">TeleBox uploader</div>
+      <h1>Upload video và lấy link</h1>
+      <p>Bản này ưu tiên trả ra 2 loại link sau khi upload xong: <code>view URL</code> và <code>download/direct URL</code>. Nếu TeleBox trang share tự sinh link có đuôi file thì app sẽ cố bóc ra tự động.</p>
+
+      <form id="uploadForm">
+        <div class="row">
+          <label>Chọn video</label>
+          <input type="file" name="video" accept="video/*" required />
+        </div>
+
+        <div class="grid row">
+          <div>
+            <label>Tên folder trên TeleBox</label>
+            <input type="text" name="folderName" placeholder="Ví dụ: video-webapp" />
+          </div>
+          <div>
+            <label>Thời hạn link</label>
+            <select name="expire_enum">
+              <option value="1">24 giờ</option>
+              <option value="2">7 ngày</option>
+              <option value="3">30 ngày</option>
+              <option value="4">Vĩnh viễn</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="submitBtn" type="submit">Upload và lấy link</button>
+      </form>
+
+      <div id="status" class="status">Sẵn sàng.</div>
+      <div id="result" class="result" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="pill blue">Resolve link có sẵn</div>
+      <h2>Dán link TeleBox để bóc direct URL</h2>
+      <p>Dùng khi bạn đã có link <code>/s/...</code> hoặc <code>/f-detail/...</code> và chỉ muốn lấy lại link tải / link xem có đuôi file.</p>
+      <form id="resolveForm">
+        <label>Link TeleBox</label>
+        <textarea id="resolveUrl" placeholder="Dán link TeleBox vào đây"></textarea>
+        <button id="resolveBtn" type="submit" class="secondary">Resolve direct URL</button>
+      </form>
+      <div id="resolveStatus" class="status">Chưa resolve.</div>
+      <div id="resolveResult" class="result" style="display:none"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const statusBox = document.getElementById('status');
+    const resultBox = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const resolveForm = document.getElementById('resolveForm');
+    const resolveStatus = document.getElementById('resolveStatus');
+    const resolveResult = document.getElementById('resolveResult');
+    const resolveBtn = document.getElementById('resolveBtn');
+
+    function setStatus(el, text, isError = false) {
+      el.textContent = text;
+      el.className = 'status ' + (isError ? 'error' : '');
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Đã copy link');
+      } catch {
+        alert('Không copy tự động được, hãy copy thủ công.');
+      }
+    }
+
+    function renderLinks(title, data) {
+      const candidateHtml = (data.candidateUrls || []).length
+        ? `<div class="linkbox"><b>Các URL ứng viên:</b><br>${data.candidateUrls.map(u => `<a href="${u}" target="_blank" rel="noreferrer">${u}</a>`).join('<br>')}</div>`
+        : '';
+
+      const viewActions = data.viewUrl ? `
+        <div class="actions">
+          <button type="button" onclick="window.open('${data.viewUrl}','_blank')">Mở link view</button>
+          <button type="button" onclick="copyText('${data.viewUrl.replace(/'/g, "\\'")}')">Copy view URL</button>
+        </div>` : '';
+
+      const downloadActions = data.downloadUrl ? `
+        <div class="actions">
+          <button type="button" onclick="window.open('${data.downloadUrl}','_blank')">Mở link download</button>
+          <button type="button" onclick="copyText('${data.downloadUrl.replace(/'/g, "\\'")}')">Copy download URL</button>
+        </div>` : '';
+
+      return `
+        <b>${title}</b><br>
+        <div class="linkbox"><b>Tên file:</b> ${data.fileName || '(không rõ)'}</div>
+        <div class="linkbox"><b>Share URL:</b><br><a href="${data.shareUrl || data.entryUrl}" target="_blank" rel="noreferrer">${data.shareUrl || data.entryUrl}</a></div>
+        <div class="linkbox"><b>View URL:</b><br>${data.viewUrl ? `<a href="${data.viewUrl}" target="_blank" rel="noreferrer">${data.viewUrl}</a>` : '<span class="muted">Chưa bóc được</span>'}${viewActions}</div>
+        <div class="linkbox"><b>Download / Direct URL:</b><br>${data.downloadUrl ? `<a href="${data.downloadUrl}" target="_blank" rel="noreferrer">${data.downloadUrl}</a>` : '<span class="muted">Chưa bóc được direct URL</span>'}${downloadActions}</div>
+        <div class="linkbox"><b>Final URL:</b><br>${data.finalUrl ? `<a href="${data.finalUrl}" target="_blank" rel="noreferrer">${data.finalUrl}</a>` : '<span class="muted">Không có</span>'}</div>
+        ${candidateHtml}
+        <div class="linkbox"><b>Ghi chú:</b> ${data.note || 'Không có'}</div>
+      `;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(statusBox, 'Đang upload... video lớn có thể mất một lúc.');
+      resultBox.style.display = 'none';
+      submitBtn.disabled = true;
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || 'Upload thất bại.');
+
+        setStatus(statusBox, 'Upload thành công.');
+        resultBox.className = 'result ok';
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = renderLinks('Kết quả upload', data);
+      } catch (error) {
+        setStatus(statusBox, error.message || String(error), true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    resolveForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus(resolveStatus, 'Đang resolve link...');
+      resolveResult.style.display = 'none';
+      resolveBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/resolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: document.getElementById('resolveUrl').value.trim() })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || 'Resolve thất bại.');
+
+        setStatus(resolveStatus, 'Resolve xong.');
+        resolveResult.className = 'result ok';
+        resolveResult.style.display = 'block';
+        resolveResult.innerHTML = renderLinks('Kết quả resolve', data);
+      } catch (error) {
+        setStatus(resolveStatus, error.message || String(error), true);
+      } finally {
+        resolveBtn.disabled = false;
+      }
+    });
+
+    window.copyText = copyText;
+  </script>
+</body>
+</html>
